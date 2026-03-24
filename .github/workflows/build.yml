@@ -1,0 +1,66 @@
+name: Build and Package jQuery
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Initialize submodules
+        run: |
+          git config --global url."https://github.com/".insteadOf "git://github.com/"
+          git submodule update --init --recursive
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '0.10'
+
+      - name: Install dependencies
+        run: npm install --registry=https://seal:2012-09-20T00:00:00.000Z@time-machines-npm.sealsecurity.io/
+
+      - name: Run grunt build
+        run: |
+          ./node_modules/.bin/grunt
+
+      - name: Install PhantomJS
+        run: |
+          curl -fLo phantomjs.tar.bz2 https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.8-linux-x86_64.tar.bz2
+          tar xjf phantomjs.tar.bz2
+          sudo cp -r phantomjs-1.9.8-linux-x86_64/* /usr/local/
+          phantomjs --version
+
+      - name: Set up PHP 5.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '5.4'
+
+      - name: Start PHP server and verify
+        run: |
+          php -S 0.0.0.0:8080 -t $GITHUB_WORKSPACE &
+          sleep 2
+          curl -sf http://localhost:8080/test/index.html | head -5
+          curl -sf -o /dev/null -w '%{http_code}' http://localhost:8080/test/data/echoData.php && echo " PHP works"
+
+      - name: Run PhantomJS tests
+        run: |
+          phantomjs --web-security=false ./test/qunit/addons/phantomjs/runner.js http://localhost:8080/test/index.html
+
+      - name: Package tarball
+        run: npm pack
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: jquery-package
+          path: "*.tgz"

@@ -1404,12 +1404,12 @@ var testHtml = function(valueObj) {
 	}
 	ok( pass, "Set HTML" );
 
-	div = jQuery("<div/>").html( valueObj("<div id='parent_1'><div id='child_1'/></div><div id='parent_2'/>") );
+	div = jQuery("<div></div>").html( valueObj("<div id='parent_1'><div id='child_1'/></div></div><div id='parent_2'/></div>") );
 
 	equal( div.children().length, 2, "Make sure two child nodes exist." );
 	equal( div.children().children().length, 1, "Make sure that a grandchild exists." );
 
-	var space = jQuery("<div/>").html(valueObj("&#160;"))[0].innerHTML;
+	var space = jQuery("<div></div>").html(valueObj("&#160;"))[0].innerHTML;
 	ok( /^\xA0$|^&nbsp;$/.test( space ), "Make sure entities are passed through correctly." );
 	equal( jQuery("<div/>").html(valueObj("&amp;"))[0].innerHTML, "&amp;", "Make sure entities are passed through correctly." );
 

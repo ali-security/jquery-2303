@@ -75,6 +75,18 @@ test("disconnected nodes", function() {
 	equal( $div.is("div"), true, "Make sure .is('nodeName') works on disconnect nodes." );
 });
 
+test("jQuery only - broken", 1, function() {
+	raises(function() {
+		// Setting context to null here somehow avoids QUnit's window.error handling
+		// making the e & e.message correct
+		// For whatever reason, without this,
+		// Sizzle.error will be called but no error will be seen in oldIE
+		jQuery.call( null, " <div/> " );
+	}, function( e ) {
+		return e.message.indexOf("Syntax error") >= 0;
+	}, "leading space invalid: $(' <div/> ')" );
+});
+
 testIframe("selector/html5_selector", "attributes - jQuery.attr", function( jQuery, window, document ) {
 	expect( 35 );
 

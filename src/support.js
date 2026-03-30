@@ -269,5 +269,15 @@ jQuery.support = (function() {
 	fragment.removeChild( div );
 	all = a = select = opt = input = fragment = div = null;
 
+	support.createHTMLDocument = ( function() {
+		try {
+			var body = document.implementation.createHTMLDocument( "" ).body;
+			body.innerHTML = "<form></form><form></form>";
+			return body.childNodes.length === 2;
+		} catch(e) {
+			return false;
+		}
+	} )();
+
 	return support;
 })();
